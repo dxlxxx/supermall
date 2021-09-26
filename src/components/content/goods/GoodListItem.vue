@@ -22,8 +22,19 @@ export default {
   },
   methods: {
     imageLoad() {
-      this.$store.state.vuexScroll.refresh();
-    }
+      this.$bus.$emit('imageLoad')
+      // const refresh = this.debounce(this.fun, 500)
+      // refresh()
+    },
+    // debounce(func, delay) {
+    //   let timer = null;
+    //   return function (...args) {
+    //     if (timer) clearTimeout(timer);
+    //     timer = setTimeout( () => {
+    //       func.apply(this, args);
+    //     }, delay)
+    //   }
+    // }
   }
 }
 </script>

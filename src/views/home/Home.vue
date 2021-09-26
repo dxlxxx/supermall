@@ -1,13 +1,18 @@
 <template>
   <div id="home">
     <nav-bar class="nav-bar-home"><template #center><div>购物街</div></template></nav-bar>
-    <scroll class="content">
+    <scroll class="content" :probe-type="3"
+            @contentScroll="contentScroll"
+            :pull-up-load="true"
+            @pullingUp="loadMore"
+            ref="scroll"    >
       <home-swiper :banners="banners"/>
       <recommend-view :recommends="recommends"/>
       <feature-view/>
       <tab-control class="tab-control" :title="['流行', '新款', '精选']" @tabClick="tabClick"/>
       <goods-list :get-goods-list="showGoods"/>
     </scroll>
+    <back-top v-show="isShow"/>
   </div>
 </template>
 
@@ -19,12 +24,14 @@ import Scroll from "@/components/common/scroll/Scroll";
 import HomeSwiper from "@/views/home/childComps/HomeSwiper";
 import RecommendView from "@/views/home/childComps/RecommendView";
 import FeatureView from "@/views/home/childComps/FeatureView";
+import BackTop from "@/components/content/backTop/BackTop";
 
 import {getHomeGoods,getHomeMultiData} from "@/network/home";
 
 export default {
   name: "Home",
   components: {
+    BackTop,
     Scroll,
     GoodsList,
     TabControl,
@@ -42,7 +49,8 @@ export default {
         new: {page: 0, list: []},
         sell: {page: 0, list: []}
       },
-      currenType: 'pop'
+      currenType: 'pop',
+      isShow: false
     }
   },
   created() {
@@ -50,6 +58,21 @@ export default {
     this.getHomeGoods('pop')
     this.getHomeGoods('new')
     this.getHomeGoods('sell')
+  },
+  mounted() {
+    const refresh = debounce(this.$refs.scroll.refresh, 50)
+    function debounce(func, delay) {
+        let timer = null 
+        return function (...args) {
+          if (timer) clearTimeout(timer);
+          timer = setTimeout( () => {
+            func.apply(this, args)
+          }, delay)
+        }
+      }
+    this.$bus.$on('imageLoad', () => {
+      refresh()
+    })
   },
   computed: {
     showGoods() {
@@ -62,6 +85,9 @@ export default {
     * */
     tabClick(index) {
       this.currenType = Object.keys(this.goods)[index]
+    },
+    contentScroll(position) {
+      this.isShow = -position.y > 1000
     },
 
     /*
@@ -79,6 +105,10 @@ export default {
         this.goods[type].list.push(...res.data.list)
         this.goods[type].page++
       })
+    },
+    loadMore() {
+      this.getHomeGoods(this.currenType)
+      this.$refs.scroll.finishPullUp()
     }
   }
 

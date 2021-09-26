@@ -8,20 +8,46 @@
 
 <script>
 import BScroll from '@better-scroll/core'
+import PullUp from '@better-scroll/pull-up'
+BScroll.use(PullUp)
 export default {
   name: "Scroll",
   data() {
     return {
-      scroll: null
+      scroll: null,
+    }
+  },
+  props: {
+    probeType: {
+      type: Number,
+      default: 0
+    },
+    pullUpLoad: {
+      type: Boolean,
+      default: false
     }
   },
   mounted() {
-    const BS = new BScroll(this.$refs.wrapper, {
-      click: true
+    this.scroll = new BScroll(this.$refs.wrapper, {
+      click: true,
+      probeType: this.probeType,
+      pullUpLoad: this.pullUpLoad
     })
-    this.$store.commit('updateScroll', BS)
+    this.scroll.on('scroll', (position) => {
+      this.$emit('contentScroll', position)
+    })
+    this.scroll.on('pullingUp', () => {
+      this.$emit('pullingUp')
+    })
   },
   methods: {
+    refresh() {
+      this.scroll.refresh()
+      console.log('----')
+    },
+    finishPullUp() {
+      this.scroll.finishPullUp()
+    }
   }
 }
 </script>
