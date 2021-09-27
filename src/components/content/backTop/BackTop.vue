@@ -9,7 +9,7 @@ export default {
   name: "BackTop",
   methods: {
     backTop() {
-      this.$store.state.vuexScroll.scrollTo(0, 0, 1000)
+      this.$emit('backClick')
     }
   }
 }

@@ -1,18 +1,25 @@
 <template>
   <div id="home">
     <nav-bar class="nav-bar-home"><template #center><div>购物街</div></template></nav-bar>
+    <tab-control class="tab-control"
+                 :title="['流行', '新款', '精选']"
+                 @tabClick="tabClick"
+                 ref="tabControl1" v-show="tabControlIsShow"/>
     <scroll class="content" :probe-type="3"
             @contentScroll="contentScroll"
             :pull-up-load="true"
             @pullingUp="loadMore"
-            ref="scroll"    >
-      <home-swiper :banners="banners"/>
+            ref="scroll">
+      <home-swiper :banners="banners" @swiperLoad="swiperLoad"/>
       <recommend-view :recommends="recommends"/>
       <feature-view/>
-      <tab-control class="tab-control" :title="['流行', '新款', '精选']" @tabClick="tabClick"/>
+      <tab-control class="tab-control"
+                   :title="['流行', '新款', '精选']"
+                   @tabClick="tabClick"
+                   ref="tabControl2"/>
       <goods-list :get-goods-list="showGoods"/>
     </scroll>
-    <back-top v-show="isShow"/>
+    <back-top v-show="isShow" @backClick="backClick"/>
   </div>
 </template>
 
@@ -27,6 +34,7 @@ import FeatureView from "@/views/home/childComps/FeatureView";
 import BackTop from "@/components/content/backTop/BackTop";
 
 import {getHomeGoods,getHomeMultiData} from "@/network/home";
+import {debounce} from "@/common/utils";
 
 export default {
   name: "Home",
@@ -44,13 +52,16 @@ export default {
     return {
       banners: [],
       recommends: [],
+      saveY: 0,
       goods: {
         pop: {page: 0, list: []},
         new: {page: 0, list: []},
         sell: {page: 0, list: []}
       },
       currenType: 'pop',
-      isShow: false
+      isShow: false,
+      tabControlOffsetTop: 0,
+      tabControlIsShow: false
     }
   },
   created() {
@@ -60,19 +71,17 @@ export default {
     this.getHomeGoods('sell')
   },
   mounted() {
-    const refresh = debounce(this.$refs.scroll.refresh, 50)
-    function debounce(func, delay) {
-        let timer = null 
-        return function (...args) {
-          if (timer) clearTimeout(timer);
-          timer = setTimeout( () => {
-            func.apply(this, args)
-          }, delay)
-        }
-      }
-    this.$bus.$on('imageLoad', () => {
-      refresh()
-    })
+    // const refresh = debounce(this.$refs.scroll.refresh, 50)
+    // this.$bus.$on('imageLoad', () => {
+    //   refresh()
+    // })
+  },
+  activated() {
+    this.$refs.scroll.refresh()
+    this.$refs.scroll.scrollTo(0, this.saveY, 0)
+  },
+  deactivated() {
+    this.saveY = this.$refs.scroll.getScrollY()
   },
   computed: {
     showGoods() {
@@ -85,9 +94,20 @@ export default {
     * */
     tabClick(index) {
       this.currenType = Object.keys(this.goods)[index]
+      this.$refs.tabControl1.currentIndex = index
+      this.$refs.tabControl2.currentIndex = index
     },
     contentScroll(position) {
+      //1.判断backtop是否显示
       this.isShow = -position.y > 1000
+      //2.判断吸顶
+      this.tabControlIsShow = -position.y > this.tabControlOffsetTop
+    },
+    swiperLoad() {
+      this.tabControlOffsetTop = this.$refs.tabControl2.$el.offsetTop
+    },
+    backClick() {
+      this.$refs.scroll.scrollTo(0, 0, 1000)
     },
 
     /*
@@ -117,7 +137,7 @@ export default {
 
 <style scoped>
   #home {
-    padding-top: 44px;
+    /*padding-bottom: 44px;*/
     position: relative;
     height: 100vh;
   }
@@ -125,17 +145,18 @@ export default {
   .nav-bar-home {
     background-color: var(--color-tint);
     color: white;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 999;
+    /*原生滚动的固定*/
+    /*position: fixed;*/
+    /*top: 0;*/
+    /*left: 0;*/
+    /*right: 0;*/
   }
 
   .tab-control {
-    position: sticky;
-    top: 43px;
+    /*position: sticky;*/
+    /*top: 43px;*/
     background-color: #fff;
+    position: relative;
   }
   .content{
     position: absolute;
@@ -143,6 +164,12 @@ export default {
     bottom: 49px;
     left: 0;
     right: 0;
+    overflow: hidden;
+  }
+  .isFixed {
+    position: fixed;
+    top: 44px;
+    z-index: 99;
   }
 
 

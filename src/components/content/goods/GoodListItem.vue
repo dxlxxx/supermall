@@ -1,6 +1,6 @@
 <template>
- <div class="goods-list-item">
-   <img :src="getGoodsItem.show.img" alt="" @load="imageLoad">
+ <div class="goods-list-item" @click="itemClick">
+   <img :src="getImage" alt="">
    <div class="goods-info">
      <p>{{getGoodsItem.title}}</p>
      <span class="price">{{getGoodsItem.price}}</span>
@@ -20,21 +20,18 @@ export default {
       }
     }
   },
+  computed: {
+    getImage() {
+      return this.getGoodsItem.image || this.getGoodsItem.show.img
+    }
+  },
   methods: {
     imageLoad() {
       this.$bus.$emit('imageLoad')
-      // const refresh = this.debounce(this.fun, 500)
-      // refresh()
     },
-    // debounce(func, delay) {
-    //   let timer = null;
-    //   return function (...args) {
-    //     if (timer) clearTimeout(timer);
-    //     timer = setTimeout( () => {
-    //       func.apply(this, args);
-    //     }, delay)
-    //   }
-    // }
+    itemClick() {
+      this.$router.push('/detail/' + this.getGoodsItem.iid)
+    }
   }
 }
 </script>
