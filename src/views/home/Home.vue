@@ -31,15 +31,14 @@ import Scroll from "@/components/common/scroll/Scroll";
 import HomeSwiper from "@/views/home/childComps/HomeSwiper";
 import RecommendView from "@/views/home/childComps/RecommendView";
 import FeatureView from "@/views/home/childComps/FeatureView";
-import BackTop from "@/components/content/backTop/BackTop";
 
 import {getHomeGoods,getHomeMultiData} from "@/network/home";
-import {debounce} from "@/common/utils";
+import {backTopMixin} from "@/common/mixin";
+
 
 export default {
   name: "Home",
   components: {
-    BackTop,
     Scroll,
     GoodsList,
     TabControl,
@@ -59,7 +58,6 @@ export default {
         sell: {page: 0, list: []}
       },
       currenType: 'pop',
-      isShow: false,
       tabControlOffsetTop: 0,
       tabControlIsShow: false
     }
@@ -71,10 +69,6 @@ export default {
     this.getHomeGoods('sell')
   },
   mounted() {
-    // const refresh = debounce(this.$refs.scroll.refresh, 50)
-    // this.$bus.$on('imageLoad', () => {
-    //   refresh()
-    // })
   },
   activated() {
     this.$refs.scroll.refresh()
@@ -88,6 +82,7 @@ export default {
       return this.goods[this.currenType].list
     }
   },
+  mixins: [backTopMixin],
   methods: {
     /*
     * 事件监听
@@ -106,9 +101,7 @@ export default {
     swiperLoad() {
       this.tabControlOffsetTop = this.$refs.tabControl2.$el.offsetTop
     },
-    backClick() {
-      this.$refs.scroll.scrollTo(0, 0, 1000)
-    },
+
 
     /*
     * 网络请求

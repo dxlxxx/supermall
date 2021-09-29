@@ -20,7 +20,7 @@
         alt=""
         v-for="(item, index) in detailInfo.detailImage[0].list"
         :keys="index"
-        @load="loadImg"
+        @load="imageLoad"
       />
     </div>
   </div>
@@ -36,9 +36,9 @@ export default {
     }
   },
   methods: {
-    loadImg() {
-      this.$emit("loadImgEvent");
-    }
+    imageLoad() {
+      this.$emit('imageLoad')
+    },
   }
 };
 </script>

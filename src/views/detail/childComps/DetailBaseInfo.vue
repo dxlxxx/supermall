@@ -84,6 +84,7 @@ export default {
   /* 孩子span继承下面2个样式 */
   font-size: 0.6rem;
   color: gray;
+
 }
 
 .services {

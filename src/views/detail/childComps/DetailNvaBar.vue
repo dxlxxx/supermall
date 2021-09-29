@@ -30,6 +30,7 @@ export default {
   methods: {
     itemClick(index) {
       this.currenIndex = index
+      this.$emit('itemClick', index)
     },
     backClick() {
       this.$router.back()

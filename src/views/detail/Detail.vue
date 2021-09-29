@@ -1,19 +1,22 @@
 <template>
   <div id="detail">
-    <detail-nva-bar ref="detailNvaBar"/>
-    <scroll class="content" ref="scroll" @contentScroll="contentScroll" :probe-type="3">
+    <detail-nva-bar ref="detailNvaBar" @itemClick="itemClick"/>
+    <scroll class="content" ref="scroll" :probe-type="3" @contentScroll="scroll">
       <detail-swiper :top-images="topImages"/>
       <detail-base-info :goods="goods"/>
       <detail-shop-info :shop="shop"/>
-      <detail-info :detail-info="detailInfo" @loadImgEvent="loadImgEvent"/>
+      <detail-info :detail-info="detailInfo" @imageLoad="imageLoad"/>
       <detail-params :param-info="detailParams" ref="detailParams"/>
-      <detail-comment :comment="commentInfo"/>
-      <goods-list :get-goods-list="recommends"/>
+      <detail-comment :comment="commentInfo" ref="detailComment"/>
+      <goods-list :get-goods-list="recommends" ref="goodsList"/>
     </scroll>
+    <back-top v-show="isShow" @backClick="backClick"/>
+    <detail-bottom-bar/>
   </div>
 </template>
 
 <script>
+import {debounce} from "@/common/utils";
 import {Shop} from "@/network/detail";
 import DetailNvaBar from "@/views/detail/childComps/DetailNvaBar";
 import {getDetail, Goods, getRecommend} from "@/network/detail";
@@ -25,9 +28,13 @@ import DetailInfo from "@/views/detail/childComps/DetailInfo";
 import GoodsList from "@/components/content/goods/GoodsList";
 import DetailParams from "@/views/detail/childComps/DetailParams";
 import DetailComment from "@/views/detail/childComps/DetailComment";
+import DetailBottomBar from "@/views/detail/childComps/DetailBottomBar";
+import {backTopMixin} from "@/common/mixin";
 export default {
   name: "Detail",
+  mixins: [backTopMixin],
   components: {
+    DetailBottomBar,
     DetailComment,
     DetailParams, GoodsList, DetailInfo, Scroll, DetailShopInfo, DetailBaseInfo, DetailSwiper, DetailNvaBar},
   data() {
@@ -40,14 +47,18 @@ export default {
       recommends: [],
       detailParams: {},
       detailParamsY: 0,
-      commentInfo: {}
+      commentInfo: {},
+      themeOffsetTopY: [],
+      getThemeOffsetTopY: null,
+      currenIndex: 0
     }
   },
   created() {
+    //1.获取id
     this.iid = this.$route.params.iid
+    //2.网络请求
     getDetail(this.iid).then(res => {
       const data = res.result
-      console.log(data)
       this.topImages = data.itemInfo.topImages
       this.goods = new Goods(data.columns, data.itemInfo, data.shopInfo.services)
       this.shop = new Shop(data.shopInfo)
@@ -57,21 +68,43 @@ export default {
         this.commentInfo = data.rate.list[0]
       }
     })
+    //3.推荐的网络请求
     getRecommend().then(res => {
       //console.log(res)
       this.recommends = res.data.list
     })
   },
-  methods: {
-    loadImgEvent() {
-      this.detailParamsY = this.$refs.detailParams.$el.offsetTop
+  mounted() {
+      //4.获取位置
+      this.getThemeOffsetTopY = debounce(() => {
+        this.themeOffsetTopY = []
+        this.themeOffsetTopY.push(0)
+        this.themeOffsetTopY.push(this.$refs.detailParams.$el.offsetTop)
+        this.themeOffsetTopY.push(this.$refs.detailComment.$el.offsetTop)
+        this.themeOffsetTopY.push(this.$refs.goodsList.$el.offsetTop)
+        this.themeOffsetTopY.push(Number.MAX_VALUE)
+      }, 500)
     },
-    contentScroll(position) {
-      //console.log(-position.y)
-      if (-position.y === this.detailParamsY){
-
-        this.$refs.detailNvaBar.currenIndex = 1
+  methods: {
+    //1.点击跳转
+    itemClick(index) {
+      this.$refs.scroll.scrollTo(0, -this.themeOffsetTopY[index], 100)
+    },
+    //2.图片加载完后获取定位
+    imageLoad() {
+      this.getThemeOffsetTopY()
+    },
+    scroll(position) {
+      const y = - position.y
+      const length = this.themeOffsetTopY.length
+      for (let i = 0; i < length - 1; i++) {
+        if (this.currenIndex !== i &&
+          (y >= this.themeOffsetTopY[i] && y < this.themeOffsetTopY[i+1])){
+          this.currenIndex = i
+          this.$refs.detailNvaBar.currenIndex = this.currenIndex
+        }
       }
+      this.isShow = -position.y > 1000
     }
   }
 
