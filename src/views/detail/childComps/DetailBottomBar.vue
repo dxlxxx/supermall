@@ -1,87 +1,91 @@
 <template>
-  <div id="detail_bottom_bar">
-    <div class="bottom_left">
-      <div class="service">
-        <i class="icon"></i>
-        <span>客服</span>
+  <div class="bottom-bar">
+    <div class="bar-item bar-left">
+      <div>
+        <i class="icon service"></i>
+        <span class="text">客服</span>
       </div>
-      <div class="shop">
-        <i class="icon"></i>
-        <span>店铺</span>
+      <div>
+        <i class="icon shop"></i>
+        <span class="text">店铺</span>
       </div>
-      <div class="collect">
-        <i class="icon"></i>
-        <span>收藏</span>
+      <div>
+        <i class="icon select"></i>
+        <span class="text">收藏</span>
       </div>
     </div>
-    <div class="bottom_right">
-      <div class="cart" @click="addToCart">
-        加入购物车
-      </div>
-      <div class="buy">
-        购买
-      </div>
+    <div class="bar-item bar-right">
+      <div class="cart" @click="addToCart">加入购物车</div>
+      <div class="buy">购买</div>
     </div>
   </div>
 </template>
+
 <script>
 export default {
+  name: "DetailBottomBar",
   methods: {
     addToCart() {
-      this.$emit("addEvent");
+      this.$emit('addToCart')
     }
   }
-};
+}
 </script>
+
 <style scoped>
-#detail_bottom_bar {
-  font-size: 0.65rem;
-  display: flex;
+.bottom-bar {
+  height: 58px;
   position: fixed;
   background-color: #fff;
-  bottom: 0px;
   left: 0;
   right: 0;
+  bottom: 0;
+  z-index: 99;
+  display: flex;
   text-align: center;
-  box-shadow: 0 -0.04rem 0.4rem gray;
-  z-index: 9;
-  height: 49px;
+}
 
-}
-.bottom_left {
+.bar-item {
+  flex: 1;
   display: flex;
+}
+
+.bar-item>div {
   flex: 1;
 }
-.bottom_left > div {
-  flex: 1;
-  border-right: 0.04rem solid rgba(128, 128, 128, 0.2);
+
+.bar-left .text {
+  font-size: 13px;
 }
-.bottom_left .icon {
+
+.bar-left .icon {
   display: block;
+  width: 22px;
+  height: 22px;
+  margin: 10px auto 3px;
   background: url("~assets/img/detail/detail_bottom.png") 0 0/100%;
-  width: 1rem;
-  height: 1rem;
-  margin: 0.42rem auto;
 }
-.service .icon {
-  background-position: 0 -2.4rem;
+
+.bar-left .service {
+  background-position:0 -54px;
 }
-.shop .icon {
-  background-position: 0 -4.5rem;
+
+.bar-left .shop {
+  background-position:0 -98px;
 }
-.bottom_right {
-  display: flex;
-  flex: 1;
+
+.bar-right {
+  font-size: 15px;
+  color: #fff;
+  line-height: 58px;
 }
-.bottom_right > div {
-  flex: 1;
-  line-height: 3.09rem;
+
+.bar-right .cart {
+  background-color: #ffe817;
+  color: #333;
 }
-.cart {
-  background-color: rgb(255, 174, 0);
-}
-.buy {
-  background-color: var(--color-tint);
-  color: white;
+
+.bar-right .buy {
+  background-color: #f69;
 }
 </style>

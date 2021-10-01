@@ -11,7 +11,8 @@
       <goods-list :get-goods-list="recommends" ref="goodsList"/>
     </scroll>
     <back-top v-show="isShow" @backClick="backClick"/>
-    <detail-bottom-bar/>
+    <detail-bottom-bar @addToCart="addToCart"/>
+    <toast/>
   </div>
 </template>
 
@@ -30,10 +31,12 @@ import DetailParams from "@/views/detail/childComps/DetailParams";
 import DetailComment from "@/views/detail/childComps/DetailComment";
 import DetailBottomBar from "@/views/detail/childComps/DetailBottomBar";
 import {backTopMixin} from "@/common/mixin";
+import Toast from "@/components/common/toast/Toast";
 export default {
   name: "Detail",
   mixins: [backTopMixin],
   components: {
+    Toast,
     DetailBottomBar,
     DetailComment,
     DetailParams, GoodsList, DetailInfo, Scroll, DetailShopInfo, DetailBaseInfo, DetailSwiper, DetailNvaBar},
@@ -74,7 +77,7 @@ export default {
       this.recommends = res.data.list
     })
   },
-  mounted() {
+  updated() {
       //4.获取位置
       this.getThemeOffsetTopY = debounce(() => {
         this.themeOffsetTopY = []
@@ -83,7 +86,7 @@ export default {
         this.themeOffsetTopY.push(this.$refs.detailComment.$el.offsetTop)
         this.themeOffsetTopY.push(this.$refs.goodsList.$el.offsetTop)
         this.themeOffsetTopY.push(Number.MAX_VALUE)
-      }, 500)
+      }, 100)
     },
   methods: {
     //1.点击跳转
@@ -105,6 +108,19 @@ export default {
         }
       }
       this.isShow = -position.y > 1000
+    },
+    addToCart() {
+      const product = {
+        image: this.topImages[0],
+        title: this.goods.title,
+        desc: this.goods.desc,
+        price: this.goods.realPrice,
+        iid: this.iid
+      }
+      this.$store.dispatch('addCart', product).then(res => {
+        this.$toast.show(res, 1500)
+        }
+      )
     }
   }
 
